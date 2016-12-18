@@ -30,7 +30,7 @@ const int WIDTH = 800, HEIGHT = 600;
 
 int main()
 {
-	std::cout << "Init\n";
+	/* ----------------------------------- INIT WINDOW -----------------------------------*/
 	glfwInit();
 	// Only OpenGL 3 is used
 	// ENUM: GLFW_CONTEXT_VERSION_MAJOR, VALUE: 3
@@ -68,7 +68,7 @@ int main()
 
 	glViewport(0, 0, width, height);
 
-	std::cout << "Create vertex shader\n";
+	/* ----------------------------------- SHADERS -----------------------------------*/
 	GLuint vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
@@ -126,21 +126,31 @@ int main()
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
-
+	/* ----------------------------------- VERTICIS AND INDICIS -----------------------------------*/
 	// Set up vertex data (and buffer(s)) and attribute pointers
-	GLfloat vertices[] = {
+	/*GLfloat vertices[] = {
 		-0.5f, -0.5f, 0.0f, // Left  
 		0.5f, -0.5f, 0.0f, // Right 
 		0.0f,  0.5f, 0.0f  // Top   
+	};*/
+	GLfloat vertices[] = {
+		0.5f,  0.5f, 0.0f,  // Top Right
+		0.5f, -0.5f, 0.0f,  // Bottom Right
+		-0.5f, -0.5f, 0.0f,  // Bottom Left
+		-0.5f,  0.5f, 0.0f   // Top Left 
+	};
+	GLuint indices[] = {  // Note that we start from 0!
+		0, 1, 3,  // First Triangle
+		1, 2, 3   // Second Triangle
 	};
 
-	std::cout << "Create Buffers\n";
+	/* ----------------------------------- BUFFERS -----------------------------------*/
 	// Vertex Buffer Object, Vertex Array Object, Element Buffer Objects
-	GLuint VBO, VAO;
+	GLuint VBO, VAO, EBO;
 	// Creates a ID for the buffer 
-	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
-	//glGenBuffers(1, &EBO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
 
 	// 1. Bind Vertex Array Object
 	glBindVertexArray(VAO);
@@ -148,12 +158,14 @@ int main()
 	// Bind the buffer to a vertex array.
 	// OpenGL allows us to bind to several buffers at once as long as they have a different buffer type.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	// Copy the data to the bound buffer
 	// GL_STATIC_DRAW: the data will most likely not change at all or very rarely.
 	// GL_DYNAMIC_DRAW: the data is likely to change a lot.
 	// GL_STREAM_DRAW: the data will change every time it is drawn.
 	// 3. Then set our vertex attributes pointers
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// ARG 0: specifies which vertex attribute we want to configure, layout(location = 0).
 	// ARG 1: specifies the size of the vertex attribute.The vertex attribute is a vec3 so it is composed of 3 values.
@@ -174,28 +186,37 @@ int main()
 
 
 
-	// RENDER LOOP
+	/* ---------------------------------- RENDER LOOP -----------------------------------*/
 	while (!glfwWindowShouldClose(window))
 	{
 		// Checks if any events are triggerd (keyboard, mouse...)
 		glfwPollEvents();
 
 		// Set the color
-		glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		// Clear the colorbuffer
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_LINE_LOOP, 0, 3);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glDrawElements(GL_LINE_LOOP, 6, GL_UNSIGNED_INT, 0);
+
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
+
 	// Properly de-allocate all resources once they've outlived their purpose
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 	return 0;
 }

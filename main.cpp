@@ -7,6 +7,8 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
+// Function prototypes
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 int main()
 {
@@ -30,6 +32,8 @@ int main()
 	}
 	glfwMakeContextCurrent(window);
 	
+	// Set callback function for input
+	glfwSetKeyCallback(window, key_callback);
 
 	// etting glewExperimental to true ensures GLEW uses more modern techniques for managing OpenGL functionality. 
 	// Leaving it to its default value of GL_FALSE might give issues when using the core profile of OpenGL.
@@ -52,6 +56,12 @@ int main()
 	{
 		// Checks if any events are triggerd (keyboard, mouse...)
 		glfwPollEvents();
+
+		// Set the color
+		glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
+		// Clear the colorbuffer
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
@@ -60,3 +70,11 @@ int main()
 	return 0;
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	std::cout << "Key pressed: " << key << "\n";
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+}
